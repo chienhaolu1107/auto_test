@@ -1,0 +1,40 @@
+#!/usr/bin/expect 
+set ip [lindex $argv 0]
+set uname [lindex $argv 1]
+set passwd [lindex $argv 2]
+set DELAY 1
+
+spawn ssh -o StrictHostKeyChecking=no $uname@$ip
+
+# login
+expect "*?assword*"
+send "$passwd\r"
+
+sleep $DELAY
+
+# check login result
+expect { 
+    "*?assword*" {
+        set err_msg "Error: username or password incorrect."
+        send_user "\n\n$err_msg\n"
+        exit 1
+    }
+    "*?#*" {
+        send "\r"
+    }
+}
+
+# Enter cli console debug mode
+expect "*?#*"
+send "moxaie\r"
+sleep $DELAY
+expect "*?(debug)#*"
+send "show ptpd tod\r"
+sleep $DELAY
+expect "*?(debug)#*"
+send "exit\r"
+sleep $DELAY
+expect "*?#*"
+send "quit\r"
+sleep $DELAY
+exit 0
